@@ -56,7 +56,7 @@ namespace Containers
         std::size_t size_       = 0;
         std::size_t capacity_   = 1024;
 
-        void ReAlloc();
+        void ReAlloc(std::size_t new_size);
     };
 
     template <typename T>
@@ -72,7 +72,7 @@ namespace Containers
         pointer_ = new T[capacity_];
         size_    = size;   
 
-        if (size_ > capacity_) ReAlloc();
+        ReAlloc(size_);
     }
 
     template <typename T>
@@ -81,7 +81,7 @@ namespace Containers
         pointer_ = new T[capacity_];
         size_    = size;   
 
-        if (size_ > capacity_) ReAlloc();
+        ReAlloc(size_);
 
         T* temp_ptr = pointer_;
 
@@ -179,8 +179,10 @@ namespace Containers
     template<typename T>
     void Vector<T>::Insert(const T& elem, std::size_t index)
     {
-        if (size_ + 1 > capacity_) ReAlloc();
-        ++size_;
+        //TODO: assert -> exception
+        assert(index < size_ && "ERROR!!! Index is out of range!\n");
+
+        ReAlloc(size_ + 1);
 
         T temp_elem = elem;
 
@@ -199,18 +201,17 @@ namespace Containers
     template<typename T>
     void Vector<T>::PushBack(const T& elem)
     {
-        if (size_ + 1 > capacity_) ReAlloc();
-        
-        *(pointer_ + size_) = elem;
-        ++size_;
+        ReAlloc(size_ + 1);
+        *(pointer_ + size_ - 1) = elem;
     }
 
     template<typename T>
     void Vector<T>::Erase(std::size_t index)
     {
-        size_--;
+        //TODO: assert -> exception
+        assert(index < size_ && "ERROR!!! Index is out of range!\n");
 
-        T temp_elem;
+        ReAlloc(size_ - 1);
 
         for (std::size_t i = index; i < size_; ++i)
         {
@@ -227,7 +228,8 @@ namespace Containers
     template<typename T>
     void Vector<T>::PopBack()
     {
-        size_--;
+        if (size_ == 0) return;
+        ReAlloc(size_ - 1);
     }
 
     template<typename T>
@@ -255,12 +257,25 @@ namespace Containers
     }
 
     template<typename T>
-    void Vector<T>::ReAlloc()
+    void Vector<T>::ReAlloc(std::size_t new_size)
     {
-        std::size_t new_capacity = capacity_ * 2;
-        T*          new_ptr      = nullptr;
+        std::size_t new_capacity = 0;
 
-        new_ptr = new T[new_capacity];
+        if (new_size > capacity_)
+        {
+            new_capacity = capacity_ * 2;
+        }
+        else if (new_size <= (capacity_ / 4))
+        {
+            new_capacity = capacity_ / 2;
+        }
+        else
+        {
+            size_ = new_size;
+            return;
+        }
+
+        T* new_ptr = new T[new_capacity];
 
         for (std::size_t i = 0; i < size_; ++i)
         {
@@ -271,6 +286,7 @@ namespace Containers
 
         pointer_    = new_ptr;
         capacity_   = new_capacity;
+        size_       = new_size;
     }
 
 } //namespace Containers
