@@ -1,8 +1,9 @@
 #ifndef MY_VECTOR_HPP
 #define MY_VECTOR_HPP
 
-#include <bits/c++config.h>
 #include <cassert>
+#include <cstdint>
+#include <cstddef>
 
 namespace Containers
 {
@@ -46,7 +47,7 @@ namespace Containers
 
         void        Clear       ();
  
-        std::size_t Size        ()     const;
+        std::size_t Size        () const;
         std::size_t Capacity    () const;
 
         bool        Empty       () const; 
@@ -120,19 +121,22 @@ namespace Containers
     template<typename T>
     Vector<T>& Vector<T>::operator= (const Vector<T>& other_vector)  
     {
-        size_     = other_vector.size_;
-        capacity_ = other_vector.capacity_;
-
-        if (pointer_ != nullptr) delete[] pointer_;
-
-        pointer_  = new T[capacity_];
-
-        T* src_ptr  = pointer_;
-        T* dest_ptr = other_vector.pointer_;
-
-        for (std::size_t i = 0; i < size_; ++i)
+        if (this != &other_vector)
         {
-            *src_ptr++ = *dest_ptr++;
+            size_     = other_vector.size_;
+            capacity_ = other_vector.capacity_;
+
+            if (pointer_ != nullptr) delete[] pointer_;
+
+            pointer_  = new T[capacity_];
+
+            T* src_ptr  = pointer_;
+            T* dest_ptr = other_vector.pointer_;
+
+            for (std::size_t i = 0; i < size_; ++i)
+            {
+                *src_ptr++ = *dest_ptr++;
+            }
         }
     }
 
