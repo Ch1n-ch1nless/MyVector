@@ -1,4 +1,5 @@
 #include "my_vector.hpp"
+#include "my_bit_vector.hpp"
 
 #include <iostream>
 
