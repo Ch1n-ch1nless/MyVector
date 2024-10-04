@@ -21,7 +21,7 @@ namespace Containers
 
             operator bool() const
             {  
-                return ((cur_byte_ & bit_mask_)) ? true : false;
+                return ((cur_byte_ & bit_mask_) != 0) ? true : false;
             }
 
             const BitRef& operator= (bool bit)

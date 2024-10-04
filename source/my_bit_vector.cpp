@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include <iostream>
+
 Containers::Vector<bool>::Vector()
 {
     pointer_    = new uint8_t[capacity_];
@@ -45,8 +47,8 @@ bool Containers::Vector<bool>::operator[](std::size_t index) const
     //TODO: assert -> exception
     assert((index <= size_) && "ERROR!!! Index is out of range!\n");
 
-    std::size_t byte_num = index << 3;
-    std::size_t bit_num  = index & 7;
+    std::size_t byte_num = index >> 3;
+    std::size_t bit_num  = index % 8;
     uint8_t     bit_mask = 1 << bit_num;
 
     return (pointer_[byte_num] & bit_mask) ? true : false;
@@ -57,8 +59,8 @@ Containers::Vector<bool>::BitRef Containers::Vector<bool>::operator[](std::size_
     //TODO: assert -> exception
     assert((index <= size_) && "ERROR!!! Index is out of range!\n");
 
-    std::size_t byte_num = index << 3;
-    std::size_t bit_num  = index & 7;
+    std::size_t byte_num = index >> 3;
+    std::size_t bit_num  = index % 8;
     uint8_t     bit_mask = 1 << bit_num;
 
     return BitRef(pointer_[byte_num], bit_mask);
@@ -76,7 +78,7 @@ const Containers::Vector<bool>::BitRef Containers::Vector<bool>::Front() const
 
 Containers::Vector<bool>::BitRef Containers::Vector<bool>::Back()
 {
-    std::size_t byte_index  = size_ << 3;
+    std::size_t byte_index  = size_ >> 3;
     std::size_t bit_index   = size_ % 8;
 
     return BitRef(pointer_[byte_index], 1 << bit_index);
@@ -84,7 +86,7 @@ Containers::Vector<bool>::BitRef Containers::Vector<bool>::Back()
 
 const Containers::Vector<bool>::BitRef Containers::Vector<bool>::Back()  const
 {
-    std::size_t byte_index  = size_ << 3;
+    std::size_t byte_index  = size_ >> 3;
     std::size_t bit_index   = size_ % 8;
 
     return BitRef(pointer_[byte_index], 1 << bit_index);
@@ -163,7 +165,7 @@ bool Containers::Vector<bool>::Empty() const
 
 std::size_t Containers::Vector<bool>::RoundToBytes(std::size_t bits_number)
 {
-    return (bits_number + 7) << 3;
+    return (bits_number + 7) >> 3;
 }
 
 void Containers::Vector<bool>::ReAlloc(std::size_t new_size)
@@ -172,11 +174,11 @@ void Containers::Vector<bool>::ReAlloc(std::size_t new_size)
 
     if (RoundToBytes(new_size) > capacity_)
     {
-        new_capacity >>= 1;
+        new_capacity <<= 1;
     }
     else if (RoundToBytes(new_size) <= (capacity_ / 4))
     {
-        new_capacity <<= 1;
+        new_capacity >>= 1;
     }
     else 
     {

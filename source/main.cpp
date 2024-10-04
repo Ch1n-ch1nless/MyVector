@@ -10,11 +10,15 @@ void Test1();
 void Test2();
 void Test3();
 
+void TestBoolVector();
+
 int main()
 {
-    Test1();
+    /*Test1();
     Test2();
-    Test3();
+    Test3();*/
+
+    TestBoolVector();
 
     return 0;
 }
@@ -117,4 +121,32 @@ void PrintVectorInfo(const Containers::Vector<T>& vector)
     std::cout << "}\n";
 
     std::cout << ">----<\n\n";
+}
+
+void TestBoolVector()
+{
+    Containers::Vector<bool> bit_set;
+
+    PrintVectorInfo(bit_set);
+
+    bit_set.PushBack(true);
+    PrintVectorInfo(bit_set);
+
+    bit_set.PushBack(false);
+    PrintVectorInfo(bit_set);
+
+    bit_set.PushBack(true);
+    PrintVectorInfo(bit_set);
+
+    bit_set[2] = false;
+    PrintVectorInfo(bit_set);
+
+    bit_set.PopFront();
+    PrintVectorInfo(bit_set);
+
+    bit_set.Insert(true, 1);
+    PrintVectorInfo(bit_set);
+
+    bit_set.PushFront(true);
+    PrintVectorInfo(bit_set);
 }
