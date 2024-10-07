@@ -14,11 +14,20 @@ void TestBoolVector();
 
 int main()
 {
-    /*Test1();
-    Test2();
-    Test3();*/
+    try 
+    {
+        Test1();
+        Test2();
+        Test3();
 
-    TestBoolVector();
+        TestBoolVector();
+    }
+    catch(Utils::MyException* exception)
+    {
+        exception->What();
+        delete exception;
+        return -1;
+    }
 
     return 0;
 }
@@ -35,7 +44,7 @@ void Test1()
 
     std::cout << vector[0] << " " << vector[1] << " " << vector[2] << '\n';
 
-    vector[2] = 10;
+    vector[4] = 10;
 
     std::cout << "vector[2] = 10: " << vector[0] << " " << vector[1] << " " << vector[2] << '\n';
 

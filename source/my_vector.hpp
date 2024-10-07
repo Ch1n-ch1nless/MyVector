@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "my_exception.hpp"
+
 namespace Containers
 {
     const std::size_t INIT_CAPACITY = 1024;
@@ -143,16 +145,14 @@ namespace Containers
     template<typename T>
     T& Vector<T>::operator[] (std::size_t index)
     {
-        //TODO: assert -> exception
-        if (index >= size_) assert(false && "ERROR!!! Index is out of range of vector!\n");
+        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
         return *(pointer_ + index);
     }
 
     template<typename T>
     const T& Vector<T>::operator[] (std::size_t index) const
     {
-        //TODO: assert -> exception
-        if (index >= size_) assert(false && "ERROR!!! Index is out of range of vector!\n");
+        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
         return *(pointer_ + index);
     }
 
@@ -183,8 +183,7 @@ namespace Containers
     template<typename T>
     void Vector<T>::Insert(const T& elem, std::size_t index)
     {
-        //TODO: assert -> exception
-        assert(index < size_ && "ERROR!!! Index is out of range!\n");
+        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
 
         ReAlloc(size_ + 1);
 
@@ -212,8 +211,7 @@ namespace Containers
     template<typename T>
     void Vector<T>::Erase(std::size_t index)
     {
-        //TODO: assert -> exception
-        assert(index < size_ && "ERROR!!! Index is out of range!\n");
+        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
 
         ReAlloc(size_ - 1);
 
