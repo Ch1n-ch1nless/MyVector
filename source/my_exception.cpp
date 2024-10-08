@@ -106,3 +106,22 @@ void Utils::MyException::GetErrorInfo(const char* error_msg)
     delete[] new_str;
 }
 
+Utils::BadAllocException::BadAllocException(MyException*   prev_exception,
+                                            const char* file, const char* function, int line) noexcept(true) :
+    MyException(Utils::ErrorCode::BAD_ALLOC, prev_exception, file, function, line)
+{
+}
+
+Utils::BadAllocException::~BadAllocException() noexcept(true)
+{
+}
+
+Utils::WrongAccessException::WrongAccessException(  MyException*   prev_exception,
+                                                    const char* file, const char* function, int line) noexcept(true) :
+    MyException(Utils::ErrorCode::WRONG_ACCESS, prev_exception, file, function, line)
+{
+}
+
+Utils::WrongAccessException::~WrongAccessException() noexcept(true)
+{
+}

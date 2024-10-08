@@ -32,7 +32,8 @@ namespace Utils
                      const char*    file,
                      const char*    function,
                      int            line                        ) noexcept(true);
-        ~MyException() noexcept(true);
+
+        virtual ~MyException() noexcept(true);
 
         virtual const char* what()      const noexcept(true) override;
         const MyException*  GetPrev()   const noexcept(true);
@@ -48,6 +49,32 @@ namespace Utils
 
         void                GetFileLocation();
         void                GetErrorInfo   (const char* error_msg);
+    };
+
+    #define BAD_ALLOC_EXCEPTION(prev_exception) Utils::BadAllocException(prev_exception, __FILE__, (const char*)__FUNCTION__, __LINE__)
+
+    class BadAllocException : public MyException
+    {
+    public:
+         BadAllocException( MyException*   prev_exception,
+                            const char* file,
+                            const char* function,
+                            int         line                ) noexcept(true);
+
+        ~BadAllocException() noexcept(true) override;
+    };
+
+    #define WRONG_ACCESS_EXCEPTION(prev_exception) Utils::WrongAccessException(prev_exception, __FILE__, (const char*)__FUNCTION__, __LINE__)
+
+    class WrongAccessException : public MyException
+    {
+    public: 
+         WrongAccessException(  MyException*   prev_exception,
+                                const char* file,
+                                const char* function,
+                                int         line                ) noexcept(true);
+
+        virtual ~WrongAccessException() noexcept(true) override;
     };
 } //namespace Utils
 

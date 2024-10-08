@@ -145,14 +145,14 @@ namespace Containers
     template<typename T>
     T& Vector<T>::operator[] (std::size_t index)
     {
-        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
+        if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
         return *(pointer_ + index);
     }
 
     template<typename T>
     const T& Vector<T>::operator[] (std::size_t index) const
     {
-        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
+        if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
         return *(pointer_ + index);
     }
 
@@ -183,7 +183,7 @@ namespace Containers
     template<typename T>
     void Vector<T>::Insert(const T& elem, std::size_t index)
     {
-        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
+        if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
 
         ReAlloc(size_ + 1);
 
@@ -211,7 +211,7 @@ namespace Containers
     template<typename T>
     void Vector<T>::Erase(std::size_t index)
     {
-        if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
+        if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
 
         ReAlloc(size_ - 1);
 

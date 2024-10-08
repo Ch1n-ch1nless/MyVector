@@ -22,7 +22,7 @@ int main()
 
         TestBoolVector();
     }
-    catch(Utils::MyException* exception)
+    catch(std::exception* exception)
     {
         std::cerr << exception->what();
         delete exception;

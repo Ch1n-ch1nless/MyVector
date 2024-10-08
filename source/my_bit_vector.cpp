@@ -44,8 +44,8 @@ Containers::Vector<bool>& Containers::Vector<bool>::operator= (const Containers:
 
 bool Containers::Vector<bool>::operator[](std::size_t index) const
 {
-    if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
-
+    if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
+    
     std::size_t byte_num = index >> 3;
     std::size_t bit_num  = index % 8;
     uint8_t     bit_mask = 1 << bit_num;
@@ -55,8 +55,8 @@ bool Containers::Vector<bool>::operator[](std::size_t index) const
 
 Containers::Vector<bool>::BitRef Containers::Vector<bool>::operator[](std::size_t index)
 {
-    if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
-
+    if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
+    
     std::size_t byte_num = index >> 3;
     std::size_t bit_num  = index % 8;
     uint8_t     bit_mask = 1 << bit_num;
@@ -92,8 +92,8 @@ const Containers::Vector<bool>::BitRef Containers::Vector<bool>::Back()  const
 
 void Containers::Vector<bool>::Insert(const bool& elem, std::size_t index)
 {
-    if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
-
+    if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
+    
     ReAlloc(size_ + 1);
 
     for (std::size_t i = size_; i > index; --i)
@@ -118,8 +118,8 @@ void Containers::Vector<bool>::PushBack(const bool& elem)
 
 void Containers::Vector<bool>::Erase(std::size_t index)
 {
-    if (index >= size_) throw new MY_EXCEPTION(Utils::ErrorCode::WRONG_ACCESS, nullptr);
-    
+    if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
+        
     ReAlloc(size_ - 1);
 
     for (std::size_t i = index; i < size_; ++i)
