@@ -32,22 +32,22 @@ namespace Utils
                      const char*    file,
                      const char*    function,
                      int            line                        ) noexcept(true);
-        ~MyException();
+        ~MyException() noexcept(true);
 
-        void                What()      noexcept(true);
-        const MyException*  GetPrev()   noexcept(true);
+        virtual const char* what()      const noexcept(true) override;
+        const MyException*  GetPrev()   const noexcept(true);
 
     private:
         MyException*    prev_exception_;
-        const char*     message_;
+        std::string     message_;
         ErrorCode       code_;
 
         const char*     file_;
         const char*     function_;
         int             line_;
 
-        void                PrintFileLocation();
-        void                PrintError();
+        void                GetFileLocation();
+        void                GetErrorInfo   (const char* error_msg);
     };
 } //namespace Utils
 

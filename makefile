@@ -28,3 +28,6 @@ $(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
 
 clean:
 	@rm $(OBJ)
+
+valgrind_build:
+	valgrind --leak-check=full --error-limit=no --log-file=test.log ./test.out

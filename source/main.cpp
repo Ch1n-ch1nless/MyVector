@@ -24,7 +24,7 @@ int main()
     }
     catch(Utils::MyException* exception)
     {
-        exception->What();
+        std::cerr << exception->what();
         delete exception;
         return -1;
     }

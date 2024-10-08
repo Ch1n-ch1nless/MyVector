@@ -1,5 +1,12 @@
 #include "my_exception.hpp"
 
+#include <cstring>
+#include <cmath>
+#include <iostream>
+
+static const char* const FILE_LOCATION_MESSAGE = "in file: %s\nin function: %s\non line: %d\n";
+static const char* const ERROR_MESSAGE         = "error_message: %s\n";
+
 Utils::MyException::MyException(ErrorCode      code,  
                                 MyException*   prev_exception, 
                                 const char*    file,
@@ -7,12 +14,14 @@ Utils::MyException::MyException(ErrorCode      code,
                                 int            line              ) noexcept(true)                     
 :
     prev_exception_ (prev_exception),
-    message_         (nullptr),
+    message_        (),
     code_           (code),
     file_           (file),
     function_       (function),
     line_           (line)
 {
+    GetFileLocation();
+    GetErrorInfo(nullptr);
 }
 
 Utils::MyException::MyException(const char*    msg,  
@@ -22,12 +31,14 @@ Utils::MyException::MyException(const char*    msg,
                                 int            line                ) noexcept(true)                 
 :
     prev_exception_ (prev_exception),
-    message_         (msg),
+    message_        (),
     code_           (Utils::ErrorCode::UNKNOWN),
     file_           (file),
     function_       (function),
     line_           (line)
 {
+    GetFileLocation();
+    GetErrorInfo(msg);
 }
 
 Utils::MyException::~MyException() noexcept(true)
@@ -35,56 +46,63 @@ Utils::MyException::~MyException() noexcept(true)
     if (prev_exception_) delete prev_exception_;
 }
 
-const Utils::MyException* Utils::MyException::GetPrev() noexcept(true)
+const Utils::MyException* Utils::MyException::GetPrev() const noexcept(true)
 {
     return prev_exception_;
 }
 
-void Utils::MyException::What() noexcept(true)
+const char* Utils::MyException::what() const noexcept(true)
 {
-    PrintFileLocation();
-    PrintError();
-
-    if (prev_exception_ != nullptr) 
-    {
-        prev_exception_->What();
-    }
+    return message_.c_str();
 }
 
-void Utils::MyException::PrintFileLocation()
+void Utils::MyException::GetFileLocation()
 {
-    fprintf(stderr, "in file: %s\nin function: %s\non line: %d\n", file_, function_, line_);
+    std::size_t len = static_cast<std::size_t>(log10(static_cast<double>(line_))) + 1;
+    len += std::strlen(file_) + std::strlen(function_) + std::strlen(FILE_LOCATION_MESSAGE);
+
+    char* new_str = new char[len];
+
+    snprintf(new_str, len, FILE_LOCATION_MESSAGE, file_, function_, line_);
+
+    message_ += new_str;
+    delete[] new_str;
 }
 
-void Utils::MyException::PrintError()
+void Utils::MyException::GetErrorInfo(const char* error_msg)
 {
-    if (message_ != nullptr)
+    if (error_msg == nullptr)
     {
-        fprintf(stderr, "error_message: %s\n", message_);
-        return;
+        switch (code_)
+        {
+        case Utils::ErrorCode::NONE :
+            error_msg = "None";
+            break;
+
+        case Utils::ErrorCode::BAD_ALLOC :
+            error_msg = BAD_ALLOC_MESSAGE;
+            break;
+
+        case Utils::ErrorCode::WRONG_ACCESS :
+            error_msg = WRONG_ACCESS_MESSAGE;
+            break;
+
+        case Utils::ErrorCode::UNKNOWN :
+            error_msg = "Unknown";
+            break;
+        
+        default:
+            fprintf(stderr, "ERROR!!!\n");
+            break;
+        }   
     }
 
-    switch (code_)
-    {
-    case Utils::ErrorCode::NONE :
-        fprintf(stderr, "error_message: %s\n", "None");
-        break;
-
-    case Utils::ErrorCode::BAD_ALLOC :
-        fprintf(stderr, "error_message: %s\n", BAD_ALLOC_MESSAGE);
-        break;
-
-    case Utils::ErrorCode::WRONG_ACCESS :
-        fprintf(stderr, "error_message: %s\n", WRONG_ACCESS_MESSAGE);
-        break;
-
-    case Utils::ErrorCode::UNKNOWN :
-        fprintf(stderr, "error_message: %s\n", "Unknown");
-        break;
+    std::size_t len = std::strlen(ERROR_MESSAGE) + std::strlen(error_msg);
     
-    default:
-        fprintf(stderr, "ERROR!!!\n");
-        break;
-    }
+    char* new_str = new char[len];
+    snprintf(new_str, len, ERROR_MESSAGE, error_msg);
+
+    message_ += new_str;
+    delete[] new_str;
 }
 
