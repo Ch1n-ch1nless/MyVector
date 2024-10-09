@@ -55,42 +55,52 @@ namespace Containers
         bool        Empty       () const; 
 
     private:
-        T*          pointer_    = nullptr;
+        char*       pointer_    = nullptr;
         std::size_t size_       = 0;
         std::size_t capacity_   = 1024;
 
-        void ReAlloc(std::size_t new_size);
+        void        ReAlloc     (std::size_t new_size);
+
+        T*          GetPointer  (std::size_t offset) const;
+        void        DestroyObj  (T* obj_ptr);
+        void        DestroyObj  (T* obj_ptr, std::size_t obj_number);
+        void        InitObj     (T* obj_ptr);
+        void        InitObj     (T* obj_ptr, std::size_t obj_number);
+
+        void        DecCapacity (std::size_t new_size);
+        void        IncCapacity (std::size_t new_size);
     };
+
+/*----------------------------< Public Functions >----------------------------*/
 
     template <typename T>
     Vector<T>::Vector()
     {
-        pointer_ = new T[capacity_];
+        pointer_ = new char[capacity_ * sizeof(T)];
         size_    = 0;
     }
 
     template <typename T>
     Vector<T>::Vector(std::size_t size)
     {
-        pointer_ = new T[capacity_];
+        pointer_ = new char[capacity_ * sizeof(T)];
         size_    = size;   
 
-        ReAlloc(size_);
+        InitObj(GetPointer(0), size_);
     }
 
     template <typename T>
     Vector<T>::Vector(std::size_t size, const T& init_elem)
     {
-        pointer_ = new T[capacity_];
-        size_    = size;   
+        pointer_ = new char[capacity_ * sizeof(T)];
+        size_    = size;
 
-        ReAlloc(size_);
-
-        T* temp_ptr = pointer_;
+        T* init_ptr = GetPointer(0);
 
         for (std::size_t i = 0; i < size_; ++i)
         {
-            *temp_ptr++ = init_elem;
+            init_ptr = new(init_ptr) T(init_elem);
+            init_ptr++;
         }
     }
 
@@ -100,19 +110,23 @@ namespace Containers
         size_       = vector.size_;
         capacity_   = vector.capacity_;
 
-        pointer_    = new T[capacity_];
-        T* src_ptr  = pointer_;
-        T* dest_ptr = vector.pointer_;
+        pointer_    = new char[capacity_ * sizeof(T)];
+        T* src_ptr  = reinterpret_cast<T*>(pointer_);
+        T* dest_ptr = reinterpret_cast<T*>(vector.pointer_);
 
         for (std::size_t i = 0; i < size_; ++i)
         {
-            *src_ptr++ = *dest_ptr++;
+            //TODO: Is it correct way to init objects?
+            src_ptr = new(src_ptr) T(*dest_ptr);
+            src_ptr++;
+            dest_ptr++;
         }
     }
 
     template<typename T>
     Vector<T>::~Vector()
     {
+        DestroyObj(GetPointer(0), size_);
         delete[] pointer_;
 
         size_       = 0;
@@ -130,14 +144,17 @@ namespace Containers
 
             if (pointer_ != nullptr) delete[] pointer_;
 
-            pointer_  = new T[capacity_];
+            pointer_  = new char[capacity_ * sizeof(T)];
 
-            T* src_ptr  = pointer_;
-            T* dest_ptr = other_vector.pointer_;
+            T* src_ptr  = reinterpret_cast<T*>(pointer_);
+            T* dest_ptr = reinterpret_cast<T*>(other_vector.pointer_);
 
             for (std::size_t i = 0; i < size_; ++i)
             {
-                *src_ptr++ = *dest_ptr++;
+                //TODO: Is it correct way to init objects?
+                src_ptr = new(src_ptr) T(*dest_ptr);
+                src_ptr++;
+                dest_ptr++;
             }
         }
     }
@@ -146,38 +163,38 @@ namespace Containers
     T& Vector<T>::operator[] (std::size_t index)
     {
         if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
-        return *(pointer_ + index);
+        return *(GetPointer(index));
     }
 
     template<typename T>
     const T& Vector<T>::operator[] (std::size_t index) const
     {
         if (index >= size_) throw new WRONG_ACCESS_EXCEPTION(nullptr);
-        return *(pointer_ + index);
+        return *(GetPointer(index));
     }
 
     template<typename T>
     T& Vector<T>::Front()
     {
-        return *(pointer_);
+        return *(GetPointer(0));
     }
 
     template<typename T>
     const T& Vector<T>::Front() const
     {
-        return *(pointer_);
+        return *(GetPointer(0));
     }
 
     template<typename T>
     T& Vector<T>::Back()
     {
-        return *(pointer_ + size_ - 1);
+        return *(GetPointer(size_-1));
     }
 
     template<typename T>
     const T& Vector<T>::Back() const
     {
-        return *(pointer_ + size_ - 1);
+        return *(GetPointer(size_-1));
     }
 
     template<typename T>
@@ -191,7 +208,7 @@ namespace Containers
 
         for (std::size_t i = index; i < size_; ++i)
         {
-            Swap(temp_elem, *(pointer_ + i));
+            Swap(temp_elem, *(GetPointer(i)));
         }
     }
 
@@ -205,7 +222,7 @@ namespace Containers
     void Vector<T>::PushBack(const T& elem)
     {
         ReAlloc(size_ + 1);
-        *(pointer_ + size_ - 1) = elem;
+        *(GetPointer(size_-1)) = elem;
     }
 
     template<typename T>
@@ -217,7 +234,7 @@ namespace Containers
 
         for (std::size_t i = index; i < size_; ++i)
         {
-            Swap(*(pointer_ + i), *(pointer_ + i + 1));
+            Swap(*(GetPointer(i)), *(GetPointer(i+1)));
         }
     }
 
@@ -237,6 +254,7 @@ namespace Containers
     template<typename T>
     void Vector<T>::Clear()
     {
+        DestroyObj(GetPointer(0), size_);
         size_ = 0;
     }
 
@@ -258,38 +276,131 @@ namespace Containers
         return (size_ == 0);
     }
 
+/*----------------------------------------------------------------------------*/
+
+/*----------------------------< Private Functions >---------------------------*/
+
     template<typename T>
     void Vector<T>::ReAlloc(std::size_t new_size)
     {
-        std::size_t new_capacity = 0;
-
         if (new_size > capacity_)
         {
-            new_capacity = capacity_ * 2;
+            IncCapacity(new_size);
         }
         else if (new_size <= (capacity_ / 4))
         {
-            new_capacity = capacity_ / 2;
+            DecCapacity(new_size);
         }
         else
         {
+            if (new_size >= size_) 
+            {
+                InitObj(GetPointer(size_), new_size - size_);
+            }
+            else
+            {
+                DestroyObj(GetPointer(new_size), size_ - new_size);
+            } 
             size_ = new_size;
             return;
         }
+    }
 
-        T* new_ptr = new T[new_capacity];
+    template<typename T>
+    void Vector<T>::DecCapacity(std::size_t new_size)
+    {
+        size_t new_capacity = capacity_ / 2;
 
-        for (std::size_t i = 0; i < size_; ++i)
+        char* new_ptr = new char[new_capacity * sizeof(T)];
+        
+        T* dest_ptr = reinterpret_cast<T*>(new_ptr);
+        T* src_ptr  = reinterpret_cast<T*>(pointer_);
+
+        for (std::size_t i = 0; i < new_size; ++i)
         {
-            new_ptr[i] = pointer_[i];
+            InitObj(dest_ptr);
+            //TODO: Is the next line good idea? Maybe we have more effective way!
+            *dest_ptr++ = *src_ptr++;               
         }
 
+        DestroyObj(GetPointer(0), size_);
         delete[] pointer_;
 
         pointer_    = new_ptr;
-        capacity_   = new_capacity;
         size_       = new_size;
+        capacity_   = new_capacity;
     }
+
+    template <typename T>
+    void Vector<T>::IncCapacity(std::size_t new_size)
+    {
+        size_t new_capacity = capacity_ * 2;
+
+        char* new_ptr = new char[new_capacity * sizeof(T)];
+        
+        T* dest_ptr = reinterpret_cast<T*>(new_ptr);
+        T* src_ptr  = reinterpret_cast<T*>(pointer_);
+
+        for (std::size_t i = 0; i < size_; ++i)
+        {
+            InitObj(dest_ptr);
+            //TODO: Is the next line good idea? Maybe we have more effective way!
+            *dest_ptr++ = *src_ptr++;               
+        }
+
+        for (std::size_t i = size_; i < new_size; ++i)
+        {
+            InitObj(dest_ptr);
+            ++dest_ptr;
+        }
+
+        DestroyObj(GetPointer(0), size_);
+        delete[] pointer_;
+
+        pointer_    = new_ptr;
+        size_       = new_size;
+        capacity_   = new_capacity;
+    }
+
+    template <typename T>
+    T* Vector<T>::GetPointer(std::size_t offset) const
+    {
+        return reinterpret_cast<T*>(pointer_) + offset;
+    }
+
+    template <typename T>
+    void Vector<T>::DestroyObj(T* obj_ptr)
+    {
+        obj_ptr->~T();
+    }
+
+    template <typename T>
+    void Vector<T>::DestroyObj(T* obj_ptr, std::size_t obj_number)
+    {
+        for (size_t i = 0; i < obj_number; ++i)
+        {
+            obj_ptr->~T();
+            ++obj_ptr;
+        }
+    }
+
+    template <typename T>
+    void Vector<T>::InitObj(T* obj_ptr)
+    {
+        obj_ptr = new(obj_ptr) T();
+    }
+
+    template <typename T>
+    void Vector<T>::InitObj(T* obj_ptr, std::size_t obj_number)
+    {
+        for (size_t i = 0; i < obj_number; ++i)
+        {
+            obj_ptr = new(obj_ptr) T();
+            ++obj_ptr;
+        } 
+    }
+
+/*----------------------------------------------------------------------------*/
 
 } //namespace Containers
 

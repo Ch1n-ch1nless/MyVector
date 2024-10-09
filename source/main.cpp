@@ -44,7 +44,7 @@ void Test1()
 
     std::cout << vector[0] << " " << vector[1] << " " << vector[2] << '\n';
 
-    vector[4] = 10;
+    vector[2] = 10;
 
     std::cout << "vector[2] = 10: " << vector[0] << " " << vector[1] << " " << vector[2] << '\n';
 
